@@ -21,7 +21,9 @@ readonly arch=$1
 readonly output_dir=$2
 
 set -o errexit -o nounset -o pipefail
+set -x
 
+# BL: The gcc 12.1 image finished is in  sha256:445bd45c982fa544b17465570c9bf00b903fb2dc888c073142b6c804f648a418
 if [ -z "${arch}" ]; then
     >&2 echo "ERROR: the first argument of the script must be the architecture."
     exit 1
@@ -32,7 +34,10 @@ if [ -z "${output_dir}" ]; then
     exit 1
 fi
 
-output_filename="gcc-toolchain-${arch}.tar.xz"
+# BL: Trying to build a toolchain with gcc 12.1 to avoid the libstdc++ problems.
+# At the very least, this should yield us a good version of libstdc++ that we can link against.
+#output_filename="gcc-toolchain-${arch}.gcc-12.1.tar.xz"
+output_filename="gcc-toolchain-${arch}.gcc-12.1.tar.xz"
 container_source_dir="/var/builds/toolchain"
 
 echo "INFO: building toolchain inside container..."
@@ -42,12 +47,16 @@ build_dir="${project_dir}/sysroot"
 output=$(realpath "${output_dir}/${output_filename}")
 image_tag=$(tr '[:upper:]' '[:lower:]' <<<"${arch}")
 
-(cd "${build_dir}"; \
-    docker build \
+(
+cd "${build_dir}"
+
+docker build \
         --build-arg ARCH="${arch}" \
         --tag "${image_tag}" \
+        --progress="plain" \
         --target toolchain \
-        .)
+        .
+)
 
 echo "INFO: exporting toolchain to '${output}'..."
 

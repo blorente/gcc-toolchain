@@ -58,7 +58,8 @@ RUN curl --fail-early --location https://ftp.gnu.org/gnu/glibc/glibc-2.26.tar.xz
 
 FROM base_image AS gcc_download
 WORKDIR /downloads/gcc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz \
+#RUN curl --fail-early --location https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz \
+RUN curl --fail-early --location https://ftpmirror.gnu.org/gnu/gcc/gcc-12.1.0/gcc-12.1.0.tar.xz \
         | tar --xz --extract --strip-components=1 --file -
 RUN ./contrib/download_prerequisites
 
@@ -108,7 +109,7 @@ RUN curl --fail-early --location https://www.x.org/releases/X11R7.7/src/lib/libX
         | tar --gzip --extract --strip-components=1 --file -
 FROM base_image AS binutils_download
 WORKDIR /downloads/binutils
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/binutils/binutils-2.44.tar.xz \
+RUN curl --fail-early --location https://ftpmirror.gnu.org/gnu/binutils/binutils-2.44.tar.xz \
         | tar --xz --extract --strip-components=1 --file -
 FROM base_image AS patchelf_download
 WORKDIR /downloads/patchelf
