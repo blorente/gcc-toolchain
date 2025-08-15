@@ -59,6 +59,9 @@ def _gcc_toolchain_impl(rctx):
             "%workspace%/{include_prefix}include",
         ] if target_arch != ARCHS.x86_64 else []) + [
             "%workspace%/sysroot/usr/include",
+            # TODO BL: Removing workspace to see if it fits. This is of course a massive hack
+            "sysroot/usr/include",
+            "/home/blorente/.cache/bazel/_bazel_blorente/f93eb61341a95c07e5e628336d419f52/external/gcc_toolchain_aarch64/sysroot/usr/include",
         ]
     ]
 
@@ -83,6 +86,11 @@ def _gcc_toolchain_impl(rctx):
                 "%workspace%/{include_prefix}include/c++/14.2.0",
                 "%workspace%/{include_prefix}include/c++/14.2.0/{include_prefix}",
                 "%workspace%/{include_prefix}include/c++/14.2.0/backward",
+
+                # TODO BL: Testing if removing the workspace macro does anything.
+                "{include_prefix}include/c++/14.2.0",
+                "{include_prefix}include/c++/14.2.0/{include_prefix}",
+                "{include_prefix}include/c++/14.2.0/backward",
             ]
         ])
 
@@ -536,7 +544,8 @@ filegroup(
 
         # Fortran includes
         "lib/gcc/{include_prefix}*/finclude/**",
-    ]),
+        # BL: Allowing empty to work around some weirdness
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -552,6 +561,8 @@ filegroup(
             "**/*.lo",
         ],
         exclude = ["lib*/**/*python*/**"],
+        # BL: Allowing empty to work around some weirdness
+        allow_empty=True,
     ),
     visibility = ["//visibility:public"],
 )
@@ -578,7 +589,8 @@ filegroup(
         # Fortran spec files.
         "**/lib*/libgfortran.spec",
         "**/lib*/libgomp.spec",
-    ]),
+        # BL: Allowing empty to work around some weirdness
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -677,7 +689,8 @@ filegroup(
     name = "libasan",
     srcs = glob([
         "lib*/libasan.so",
-    ]),
+        # BL: Allowing empty to work around some weirdness
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -685,7 +698,8 @@ filegroup(
     name = "liblsan",
     srcs = glob([
         "lib*/liblsan.so",
-    ]),
+        # BL: Allowing empty to work around some weirdness
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -694,7 +708,8 @@ filegroup(
     srcs = glob([
         "lib*/libtsan.so",
         "lib*/lib64/libtsan.so",
-    ]),
+        # BL: Allowing empty to work around some weirdness
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -702,7 +717,11 @@ filegroup(
     name = "libubsan",
     srcs = glob([
         "lib*/libubsan.so",
-    ]),
+        # BL: Allowing empty to work around some weirdness
+    ], allow_empty=True),
+
     visibility = ["//visibility:public"],
 )
 """
+
+
