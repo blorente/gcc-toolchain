@@ -1,0 +1,87 @@
+module(name = "gcc_toolchain", version="0.8.0")
+
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
+bazel_dep(name = "aspect_bazel_lib", version = "2.20.0")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.0")
+
+# Local Toolchains
+# ================
+
+# Unfortunately, we can't load `ARCHS` directly here.
+# But the attributes in `gcc_register_toolchain.register_toolchain` are gated to only contain values from ARCHS
+all_architectures = [
+    "aarch64",
+    "armv7",
+    "x86_64",
+]
+
+gcc_register_toolchain = use_extension("//toolchain:module_extensions.bzl", "gcc_register_toolchain_ext")
+
+[gcc_register_toolchain.register_toolchain(
+    name = "gcc_toolchain_{}".format(arch),
+    target_arch = arch,
+)
+for arch in all_architectures]
+
+[use_repo(gcc_register_toolchain, "gcc_toolchain_{}".format(arch))
+for arch in all_architectures]
+
+[register_toolchains(
+    "@gcc_toolchain_{}//:cc_toolchain".format(arch),
+    "@gcc_toolchain_{}//:fortran_toolchain".format(arch),
+)
+for arch in all_architectures]
+
+# Dev Dependencies (for examples)
+# ===============================
+
+bazel_dep(name = "rules_foreign_cc", version = "0.15.0", dev_dependency=True)
+bazel_dep(name = "rules_proto", version = "7.1.0", dev_dependency=True)
+bazel_dep(name = "protobuf", version = "29.3", dev_dependency=True, repo_name="com_google_protobuf")
+single_version_override(
+    module_name = "protobuf",
+    patch_strip = 1,
+    patches = ["//third_party/patches:com_google_protobuf.bzlmod.patch"],
+    version = "29.3",
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+  name = "avl",
+  url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
+  sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
+  strip_prefix = "Avl",
+  build_file = "//:examples/avl/avl.BUILD.bazel",
+)
+
+_ALL_SRCS = """\
+filegroup(
+    name = "srcs",
+    srcs = glob(
+        include = ["**"],
+        exclude = ["**/* *"],
+    ),
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+  name = "lapack",
+  url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.0.tar.gz",
+  sha256 = "eac9570f8e0ad6f30ce4b963f4f033f0f643e7c3912fc9ee6cd99120675ad48b",
+  strip_prefix = "lapack-3.12.0",
+  patch_cmds = [
+    "cat > make.inc <<EOF\n####################################################################\n#  LAPACK make include file.                                       #\n####################################################################\n\nSHELL = $0\n\nCC ?=\n\nFC ?=\nFFLAGS ?=\nFFLAGS_DRV ?=\nFFLAGS_NOOPT ?=\n\nLDFLAGS ?=\n\nAR ?=\nARFLAGS = cr\nRANLIB = echo\n\nBLASLIB ?=\nCBLASLIB ?=\nLAPACKLIB ?=\nTMGLIB ?=\nLAPACKELIB ?=\n\nDOCSDIR ?=\n\nTIMER ?=\nEOF\n"
+  ],
+  build_file_content = _ALL_SRCS,
+)
+
+http_archive(
+    name = "openssl",
+    sha256 = "40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a",
+    strip_prefix = "openssl-1.1.1n",
+    url = "https://www.openssl.org/source/openssl-1.1.1n.tar.gz",
+    build_file_content = _ALL_SRCS,
+)
+

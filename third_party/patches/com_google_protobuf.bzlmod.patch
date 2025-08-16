@@ -1,0 +1,51 @@
+diff --git a/BUILD.bazel b/BUILD.bazel
+index 32b26cbdc..714b189d2 100644
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -1,6 +1,6 @@
+ # Bazel (https://bazel.build/) BUILD file for Protobuf.
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
++load("@@//rules_cc:defs.bzl", cc_binary = "cc_binary_internal", cc_library = "cc_library_internal")
+ load("@rules_license//rules:license.bzl", "license")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+diff --git a/conformance/BUILD.bazel b/conformance/BUILD.bazel
+index 9d7938d75..cf96302d0 100644
+--- a/conformance/BUILD.bazel
++++ b/conformance/BUILD.bazel
+@@ -1,6 +1,7 @@
+ # Conformance testing for Protobuf.
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
++load("@rules_cc//cc:defs.bzl", "objc_library")
++load("@@//rules_cc:defs.bzl", cc_binary = "cc_binary_internal", cc_library = "cc_library_internal")
+ load(
+     "@rules_pkg//pkg:mappings.bzl",
+     "pkg_filegroup",
+diff --git a/examples/BUILD.bazel b/examples/BUILD.bazel
+index 4b701c403..cc6c4234c 100644
+--- a/examples/BUILD.bazel
++++ b/examples/BUILD.bazel
+@@ -9,7 +9,7 @@ load("@com_google_protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto
+ load("@com_google_protobuf//bazel:java_proto_library.bzl", "java_proto_library")
+ load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+ load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
+-load("@rules_cc//cc:defs.bzl", "cc_binary")
++load("@@//rules_cc:defs.bzl", cc_binary = "cc_binary_internal")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("@rules_python//python:py_binary.bzl", "py_binary")
+ 
+diff --git a/src/google/protobuf/compiler/BUILD.bazel b/src/google/protobuf/compiler/BUILD.bazel
+index 5012ee793..1e8921df7 100644
+--- a/src/google/protobuf/compiler/BUILD.bazel
++++ b/src/google/protobuf/compiler/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
++load("@@//rules_cc:defs.bzl", cc_binary = "cc_binary_internal", cc_library = "cc_library_internal", cc_test = "cc_test_internal")
+ load(
+     "@rules_pkg//pkg:mappings.bzl",
+     "pkg_attributes",
