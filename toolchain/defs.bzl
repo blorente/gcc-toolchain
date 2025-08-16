@@ -22,6 +22,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def _gcc_toolchain_impl(rctx):
+    print("BL: _gcc_toolchain_impl(name={})".format(rctx.name))
     rctx.extract(archive = rctx.attr.toolchain_files)
 
     absolute_toolchain_root = str(rctx.path("."))
@@ -53,11 +54,11 @@ def _gcc_toolchain_impl(rctx):
             include_prefix = include_prefix,
         )
         for include in [
+            "%workspace%/lib/gcc/{include_prefix}14.2.0/include",
+            "%workspace%/lib/gcc/{include_prefix}14.2.0/include-fixed",
+            # BL: Patching to 12.1
             "%workspace%/lib/gcc/{include_prefix}12.1.0/include",
             "%workspace%/lib/gcc/{include_prefix}12.1.0/include-fixed",
-            # BL: Patching to 12.1
-            #"%workspace%/lib/gcc/{include_prefix}14.2.0/include",
-            #"%workspace%/lib/gcc/{include_prefix}14.2.0/include-fixed",
         ] + ([
             "%workspace%/{include_prefix}include",
         ] if target_arch != ARCHS.x86_64 else []) + [
@@ -75,13 +76,13 @@ def _gcc_toolchain_impl(rctx):
                 include_prefix = include_prefix,
             )
             for include in [
+                "%workspace%/include/c++/14.2.0",
+                "%workspace%/include/c++/14.2.0/{include_prefix}",
+                "%workspace%/include/c++/14.2.0/backward",
             # BL: Patching to 12.1
                 "%workspace%/include/c++/12.1.0",
                 "%workspace%/include/c++/12.1.0/{include_prefix}",
                 "%workspace%/include/c++/12.1.0/backward",
-#                "%workspace%/include/c++/14.2.0",
-#                "%workspace%/include/c++/14.2.0/{include_prefix}",
-#                "%workspace%/include/c++/14.2.0/backward",
             ]
         ])
     else:
@@ -90,22 +91,23 @@ def _gcc_toolchain_impl(rctx):
                 include_prefix = include_prefix,
             )
             for include in [
+                "%workspace%/{include_prefix}include/c++/14.2.0",
+                "%workspace%/{include_prefix}include/c++/14.2.0/{include_prefix}",
+                "%workspace%/{include_prefix}include/c++/14.2.0/backward",
                 # BL: Patching to 12.1
                 "%workspace%/{include_prefix}include/c++/12.1.0",
                 "%workspace%/{include_prefix}include/c++/12.1.0/{include_prefix}",
                 "%workspace%/{include_prefix}include/c++/12.1.0/backward",
-#                "%workspace%/{include_prefix}include/c++/14.2.0",
-#                "%workspace%/{include_prefix}include/c++/14.2.0/{include_prefix}",
-#                "%workspace%/{include_prefix}include/c++/14.2.0/backward",
 
                 # TODO BL: Testing if removing the workspace macro does anything.
+
+                "{include_prefix}include/c++/14.2.0",
+                "{include_prefix}include/c++/14.2.0/{include_prefix}",
+                "{include_prefix}include/c++/14.2.0/backward",
                 # BL: Patching to 12.1
                 "{include_prefix}include/c++/12.1.0",
                 "{include_prefix}include/c++/12.1.0/{include_prefix}",
                 "{include_prefix}include/c++/12.1.0/backward",
-#                "{include_prefix}include/c++/14.2.0",
-#                "{include_prefix}include/c++/14.2.0/{include_prefix}",
-#                "{include_prefix}include/c++/14.2.0/backward",
             ]
         ])
 
@@ -114,8 +116,8 @@ def _gcc_toolchain_impl(rctx):
             include_prefix = include_prefix,
         )
         for include in [
-                # BL: Patching to 12.1
-            #"%workspace%/lib/gcc/{include_prefix}14.2.0/finclude",
+            "%workspace%/lib/gcc/{include_prefix}14.2.0/finclude",
+            # BL: Patching to 12.1
             "%workspace%/lib/gcc/{include_prefix}12.1.0/finclude",
         ]
     ]
@@ -397,6 +399,7 @@ def gcc_register_toolchain(
         target_arch: The target architecture of the toolchain.
         **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
     """
+    print("BL: defs.bzl:gcc_register_toolchain(name={}, target_arch={})".format(name, target_arch))
     binary_prefix = kwargs.pop("binary_prefix", None)
     if binary_prefix == None:
         if target_arch == ARCHS.aarch64:
@@ -423,6 +426,7 @@ def gcc_register_toolchain(
     )
 
     native.register_toolchains("@{}//:cc_toolchain".format(name))
+    print("BL: registering toolchain @{}//:fortran_toolchain".format(name))
     native.register_toolchains("@{}//:fortran_toolchain".format(name))
 
 ARCHS = struct(
@@ -432,12 +436,14 @@ ARCHS = struct(
 )
 
 _TOOLCHAINS = {
-    #"aarch64": Label("//sysroot:gcc-toolchain-aarch64.tar.xz"),
+    "aarch64": Label("//sysroot:gcc-toolchain-aarch64.tar.xz"),
     # BL: TODO This is just a label for a toolchain built with the right gcc and libstdc++
-    "aarch64": Label("//sysroot:gcc-toolchain-aarch64.gcc-12.1.tar.xz"),
+    #"aarch64": Label("//sysroot:gcc-toolchain-aarch64.gcc-12.1.tar.xz"),
     "armv7": Label("//sysroot:gcc-toolchain-armv7.tar.xz"),
     "x86_64": Label("//sysroot:gcc-toolchain-x86_64.tar.xz"),
 }
+
+BL_TOOLCHAINS = _TOOLCHAINS
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
